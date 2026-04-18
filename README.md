@@ -2,35 +2,39 @@
 
 ## Project Summary
 
-In this project you will build and explain a small music recommender system.
-
-Your goal is to:
-
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
-
-Replace this paragraph with your own summary of what your version does.
+For this project I built a small music recommender system that scores songs based on what a user actually likes — their favorite genre, their mood preference, how high-energy they want the music to be, and whether they prefer acoustic or electronic sounds. It takes a user profile, runs every song in the catalog through a scoring formula, and returns the top matches ranked highest to lowest. The whole thing is content-based, meaning it looks at the song's attributes directly instead of needing data from other users.
 
 ---
 
 ## How The System Works
 
-Explain your design in plain language.
+Each Songstores these attributes from the dataset:
+- genre (like pop, lofi, rock, ambient)
+- mood (happy, chill, intense, moody, focused, relaxed)
+- energ` — a number from 0 to 1, where 0.28 is super chill and 0.93 is basically a gym playlist
+- acousticness — 0 to 1, how acoustic vs. electronic the song sounds
 
-Some prompts to answer:
+Each UserProfile stores four preference fields that map directly to those song features:
+- favorite_genre
+- favorite_mood
+- target_energy— what energy level they're looking for right now
+- likes_acousti— True or False
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+The `Recommender` scores every song using this formula:
 
-You can include a simple diagram or bullet list if helpful.
+```
+score = (genre_match × 2.0)
+      + (mood_match × 1.5)
+      + (1 - |song.energy - user.target_energy|) × 1.5
+      + (acousticness_fit × 1.0)
+```
+
+
+Genre and mood are binary matches (either it matches or it doesn't), so they get the highest weights since they're the strongest signals for what someone actually wants to hear. and they have a good range from sub 0.1 to over 0.9 values.  Energy closeness is continuous — a song with energy 0.82 scores better for a user targeting 0.8 than one at 0.4. Acousticness maps the boolean likes_acoustic 
+
+After scoring every song, it sorts them high to low and return top k results.
 
 ---
-
 ## Getting Started
 
 ### Setup
