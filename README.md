@@ -67,9 +67,13 @@ The system clearly picks Storm Runner — that's the point.
 
 ### Terminal Output
 
-Running `python3 -m src.main` with the default pop/happy profile:
+Default pop/happy profile:
 
 ![Terminal output showing top 5 recommendations with scores and reasons](https://i.imgur.com/e6kKS89.png)
+
+All 7 profiles run against the 18-song catalog:
+
+![Terminal output showing all profile recommendations with scores and reasons](https://i.imgur.com/9ZsLOkv.png)
 
 ---
 ## Getting Started
@@ -104,89 +108,6 @@ pytest
 ```
 
 You can add more tests in `tests/test_recommender.py`.
-
----
-
-## Profile Terminal Output
-
-All 7 profiles run against the 18-song catalog (`python3 -m src.main`):
-
-**High-Energy Pop** — genre + mood + energy + acousticness all fire on Sunrise City
-```
-#   Title                     Score   Reasons
-----------------------------------------------------------------------
-1   Sunrise City              5.88    genre match (+2.0), mood match (+1.5), energy closeness (+1.38), acousticness fit (+1.0)
-2   Gym Hero                  4.46    genre match (+2.0), energy closeness (+1.46), acousticness fit (+1.0)
-3   Rooftop Lights            3.79    mood match (+1.5), energy closeness (+1.29), acousticness fit (+1.0)
-4   Storm Runner              2.48    energy closeness (+1.48), acousticness fit (+1.0)
-5   Red Signal                2.44    energy closeness (+1.44), acousticness fit (+1.0)
-```
-
-**Chill Lofi** — Library Rain and Midnight Coding both nail all 4 features
-```
-#   Title                     Score   Reasons
-----------------------------------------------------------------------
-1   Library Rain              5.96    genre match (+2.0), mood match (+1.5), energy closeness (+1.46), acousticness fit (+1.0)
-2   Midnight Coding           5.94    genre match (+2.0), mood match (+1.5), energy closeness (+1.44), acousticness fit (+1.0)
-3   Focus Flow                4.47    genre match (+2.0), energy closeness (+1.47), acousticness fit (+1.0)
-4   Spacewalk Thoughts        3.85    mood match (+1.5), energy closeness (+1.35), acousticness fit (+1.0)
-5   Coffee Shop Stories       2.48    energy closeness (+1.48), acousticness fit (+1.0)
-```
-
-**Deep Intense Rock** — Storm Runner scores a perfect 6.00
-```
-#   Title                     Score   Reasons
-----------------------------------------------------------------------
-1   Storm Runner              6.00    genre match (+2.0), mood match (+1.5), energy closeness (+1.50), acousticness fit (+1.0)
-2   Gym Hero                  3.97    mood match (+1.5), energy closeness (+1.47), acousticness fit (+1.0)
-3   Red Signal                2.46    energy closeness (+1.46), acousticness fit (+1.0)
-4   Sunrise City              2.36    energy closeness (+1.36), acousticness fit (+1.0)
-5   Rooftop Lights            2.27    energy closeness (+1.27), acousticness fit (+1.0)
-```
-
-**Conflicting: high energy + sad mood** ⚠️ — genre match pulls in a wrong-vibe song at #1
-```
-#   Title                     Score   Reasons
-----------------------------------------------------------------------
-1   Still Waters              2.96    genre match (+2.0), energy closeness (+0.96)
-2   Storm Runner              2.48    energy closeness (+1.48), acousticness fit (+1.0)
-3   Gym Hero                  2.46    energy closeness (+1.46), acousticness fit (+1.0)
-4   Red Signal                2.44    energy closeness (+1.44), acousticness fit (+1.0)
-5   Sunrise City              2.38    energy closeness (+1.38), acousticness fit (+1.0)
-```
-
-**Genre not in catalog (metal)** ⚠️ — genre never fires, max score drops from 6.0 to 4.0
-```
-#   Title                     Score   Reasons
-----------------------------------------------------------------------
-1   Storm Runner              4.00    mood match (+1.5), energy closeness (+1.50), acousticness fit (+1.0)
-2   Gym Hero                  3.97    mood match (+1.5), energy closeness (+1.47), acousticness fit (+1.0)
-3   Red Signal                2.46    energy closeness (+1.46), acousticness fit (+1.0)
-4   Sunrise City              2.36    energy closeness (+1.36), acousticness fit (+1.0)
-5   Rooftop Lights            2.27    energy closeness (+1.27), acousticness fit (+1.0)
-```
-
-**Perfect middle energy (0.5)** ⚠️ — all energy scores are mediocre, genre becomes the only separator
-```
-#   Title                     Score   Reasons
-----------------------------------------------------------------------
-1   Spacewalk Thoughts        4.17    genre match (+2.0), energy closeness (+1.17), acousticness fit (+1.0)
-2   Moonlight Reimagined      3.46    mood match (+1.5), energy closeness (+0.96), acousticness fit (+1.0)
-3   Salsa del Mar             2.67    mood match (+1.5), energy closeness (+1.17)
-4   Velvet Sunday             2.46    energy closeness (+1.46), acousticness fit (+1.0)
-5   Midnight Coding           2.38    energy closeness (+1.38), acousticness fit (+1.0)
-```
-
-**Acoustic + high energy contradiction** ⚠️ — quiet folk song wins over high-energy songs because 3 features outvote 1
-```
-#   Title                     Score   Reasons
-----------------------------------------------------------------------
-1   Autumn Letters            5.00    genre match (+2.0), mood match (+1.5), energy closeness (+0.49), acousticness fit (+1.0)
-2   Velvet Sunday             1.89    energy closeness (+0.89), acousticness fit (+1.0)
-3   Midnight Coding           1.81    energy closeness (+0.81), acousticness fit (+1.0)
-4   Focus Flow                1.78    energy closeness (+0.78), acousticness fit (+1.0)
-5   Coffee Shop Stories       1.73    energy closeness (+0.73), acousticness fit (+1.0)
-```
 
 ---
 
@@ -232,7 +153,3 @@ This one was the most interesting failure. Autumn Letters (folk, melancholic, en
 ## Reflection
 
 [**Model Card**](model_card.md)
-
-Running the stress tests actually taught me more than building the formula did. The "acoustic + high energy" profile broke my system in a way I didn't expect — Autumn Letters, a quiet folk song, got recommended to someone who said they wanted high energy music, and it scored 5.0 doing it. The genre, mood, and acousticness weights all agreed on it even though the energy was totally wrong. I had given those three features more combined weight than energy, so they just outvoted it. That made me realize that the weights aren't neutral — they're a design decision, and if they're off, the system confidently gives bad answers.
-
-The other thing that surprised me was how much the "missing genre" case revealed. When I tested a "metal" user, the system didn't crash or say "I don't know" — it just quietly got worse and returned results that were less and less related to what the user wanted. Real recommenders probably have this problem too, they just hide it better. Spotify has way more data to fall back on, but the underlying issue is the same: if a user's taste isn't well represented in your data, they get worse recommendations, and they might not even know why.
