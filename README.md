@@ -2,37 +2,74 @@
 
 ## Project Summary
 
-For this project I built a small music recommender system that scores songs based on what a user actually likes — their favorite genre, their mood preference, how high-energy they want the music to be, and whether they prefer acoustic or electronic sounds. It takes a user profile, runs every song in the catalog through a scoring formula, and returns the top matches ranked highest to lowest. The whole thing is content-based, meaning it looks at the song's attributes directly instead of needing data from other users.
+For this project I built a small music recommender system that scores songs based on what a user actually likes — their favorite genre, their mood preference, how high-energy they want the music to be, and whether they prefer acoustic or electronic sounds. 
+It takes a user profile, runs every song in the catalog through a scoring formula, and returns the top matches ranked highest to lowest. 
+The whole thing is content-based,t looks at the song's attributes directly instead of needing data from other users.
 
 ---
 
 ## How The System Works
 
-Each Songstores these attributes from the dataset:
-- genre (like pop, lofi, rock, ambient)
-- mood (happy, chill, intense, moody, focused, relaxed)
-- energ` — a number from 0 to 1, where 0.28 is super chill and 0.93 is basically a gym playlist
-- acousticness — 0 to 1, how acoustic vs. electronic the song sounds
+### What each song stores
 
-Each UserProfile stores four preference fields that map directly to those song features:
-- favorite_genre
-- favorite_mood
-- target_energy— what energy level they're looking for right now
-- likes_acousti— True or False
+Each song has 10 fields but I only use 4 of them to score it:
 
-The `Recommender` scores every song using this formula:
+- `genre` — like pop, rock, lofi, classical
+- `mood` — like happy, intense, chill, sad
+- `energy` — a number from 0 to 1 (0.14 is basically a lullaby, 0.94 is a workout song)
+- `acousticness` — a number from 0 to 1 (high = guitar/piano, low = electronic/produced)
+
+I dropped tempo and danceability because they were pretty much already covered by energy and mood.
+
+### What the user profile stores
+
+The user profile has four things that match directly to those song features:
+
+- `favorite_genre` — like `"rock"`
+- `favorite_mood` — like `"intense"`
+- `target_energy` — like `0.85`
+- `likes_acoustic` — `True` or `False`
+
+### Algorithm Recipe
+
+For every song, I calculate a score using this formula:
 
 ```
-score = (genre_match × 2.0)
-      + (mood_match × 1.5)
-      + (1 - |song.energy - user.target_energy|) × 1.5
+score = (genre_match  × 2.0)
+      + (mood_match   × 1.5)
+      + (1 - |song.energy - target_energy|) × 1.5
       + (acousticness_fit × 1.0)
 ```
 
+Breaking it down:
 
-Genre and mood are binary matches (either it matches or it doesn't), so they get the highest weights since they're the strongest signals for what someone actually wants to hear. and they have a good range from sub 0.1 to over 0.9 values.  Energy closeness is continuous — a song with energy 0.82 scores better for a user targeting 0.8 than one at 0.4. Acousticness maps the boolean likes_acoustic 
+1. **Genre match** — if the song's genre matches what you said you like, add 2.0. If not, add nothing. It gets the highest weight because genre is usually the first thing people care about.
+2. **Mood match** — same idea but worth 1.5. Matches what you're trying to feel right now.
+3. **Energy closeness** — the closer the song's energy is to your target, the more points it gets. So if you want 0.85 energy and the song is 0.91, that's almost perfect. Worth 1.5.
+4. **Acousticness fit** — if you like acoustic and the song is acoustic (or vice versa), add 1.0. Worth the least because it's just a yes/no preference.
 
-After scoring every song, it sorts them high to low and return top k results.
+After every song gets a score, they get sorted from highest to lowest and the top results get returned.
+
+**Example with a rock/intense user:**
+
+| Song | Score |
+|---|---|
+| Storm Runner (rock, intense, energy 0.91) | **5.91** |
+| Midnight Coding (lofi, chill, energy 0.42) | **0.86** |
+
+The system clearly picks Storm Runner — that's the point.
+
+### Possible biases I noticed
+
+- Genre is worth the most points, so a decent rock song will usually beat a really good jazz song if the user said they like rock. That feels a little unfair.
+- Mood is all-or-nothing. "Happy" and "nostalgic" get treated like they're totally different even though they're kind of similar.
+- My dataset has way more chill and happy songs than sad or angry ones, so users with those preferences get fewer good matches — not because of the formula, just because of what songs exist.
+
+### Terminal Output
+
+Running `python3 -m src.main` with the default pop/happy profile:
+
+![Terminal output showing top 5 recommendations with scores and reasons](https://i.imgur.com/e6kKS89.png)
 
 ---
 ## Getting Started
