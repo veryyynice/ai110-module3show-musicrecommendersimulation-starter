@@ -107,146 +107,132 @@ You can add more tests in `tests/test_recommender.py`.
 
 ---
 
+## Profile Terminal Output
+
+All 7 profiles run against the 18-song catalog (`python3 -m src.main`):
+
+**High-Energy Pop** — genre + mood + energy + acousticness all fire on Sunrise City
+```
+#   Title                     Score   Reasons
+----------------------------------------------------------------------
+1   Sunrise City              5.88    genre match (+2.0), mood match (+1.5), energy closeness (+1.38), acousticness fit (+1.0)
+2   Gym Hero                  4.46    genre match (+2.0), energy closeness (+1.46), acousticness fit (+1.0)
+3   Rooftop Lights            3.79    mood match (+1.5), energy closeness (+1.29), acousticness fit (+1.0)
+4   Storm Runner              2.48    energy closeness (+1.48), acousticness fit (+1.0)
+5   Red Signal                2.44    energy closeness (+1.44), acousticness fit (+1.0)
+```
+
+**Chill Lofi** — Library Rain and Midnight Coding both nail all 4 features
+```
+#   Title                     Score   Reasons
+----------------------------------------------------------------------
+1   Library Rain              5.96    genre match (+2.0), mood match (+1.5), energy closeness (+1.46), acousticness fit (+1.0)
+2   Midnight Coding           5.94    genre match (+2.0), mood match (+1.5), energy closeness (+1.44), acousticness fit (+1.0)
+3   Focus Flow                4.47    genre match (+2.0), energy closeness (+1.47), acousticness fit (+1.0)
+4   Spacewalk Thoughts        3.85    mood match (+1.5), energy closeness (+1.35), acousticness fit (+1.0)
+5   Coffee Shop Stories       2.48    energy closeness (+1.48), acousticness fit (+1.0)
+```
+
+**Deep Intense Rock** — Storm Runner scores a perfect 6.00
+```
+#   Title                     Score   Reasons
+----------------------------------------------------------------------
+1   Storm Runner              6.00    genre match (+2.0), mood match (+1.5), energy closeness (+1.50), acousticness fit (+1.0)
+2   Gym Hero                  3.97    mood match (+1.5), energy closeness (+1.47), acousticness fit (+1.0)
+3   Red Signal                2.46    energy closeness (+1.46), acousticness fit (+1.0)
+4   Sunrise City              2.36    energy closeness (+1.36), acousticness fit (+1.0)
+5   Rooftop Lights            2.27    energy closeness (+1.27), acousticness fit (+1.0)
+```
+
+**Conflicting: high energy + sad mood** ⚠️ — genre match pulls in a wrong-vibe song at #1
+```
+#   Title                     Score   Reasons
+----------------------------------------------------------------------
+1   Still Waters              2.96    genre match (+2.0), energy closeness (+0.96)
+2   Storm Runner              2.48    energy closeness (+1.48), acousticness fit (+1.0)
+3   Gym Hero                  2.46    energy closeness (+1.46), acousticness fit (+1.0)
+4   Red Signal                2.44    energy closeness (+1.44), acousticness fit (+1.0)
+5   Sunrise City              2.38    energy closeness (+1.38), acousticness fit (+1.0)
+```
+
+**Genre not in catalog (metal)** ⚠️ — genre never fires, max score drops from 6.0 to 4.0
+```
+#   Title                     Score   Reasons
+----------------------------------------------------------------------
+1   Storm Runner              4.00    mood match (+1.5), energy closeness (+1.50), acousticness fit (+1.0)
+2   Gym Hero                  3.97    mood match (+1.5), energy closeness (+1.47), acousticness fit (+1.0)
+3   Red Signal                2.46    energy closeness (+1.46), acousticness fit (+1.0)
+4   Sunrise City              2.36    energy closeness (+1.36), acousticness fit (+1.0)
+5   Rooftop Lights            2.27    energy closeness (+1.27), acousticness fit (+1.0)
+```
+
+**Perfect middle energy (0.5)** ⚠️ — all energy scores are mediocre, genre becomes the only separator
+```
+#   Title                     Score   Reasons
+----------------------------------------------------------------------
+1   Spacewalk Thoughts        4.17    genre match (+2.0), energy closeness (+1.17), acousticness fit (+1.0)
+2   Moonlight Reimagined      3.46    mood match (+1.5), energy closeness (+0.96), acousticness fit (+1.0)
+3   Salsa del Mar             2.67    mood match (+1.5), energy closeness (+1.17)
+4   Velvet Sunday             2.46    energy closeness (+1.46), acousticness fit (+1.0)
+5   Midnight Coding           2.38    energy closeness (+1.38), acousticness fit (+1.0)
+```
+
+**Acoustic + high energy contradiction** ⚠️ — quiet folk song wins over high-energy songs because 3 features outvote 1
+```
+#   Title                     Score   Reasons
+----------------------------------------------------------------------
+1   Autumn Letters            5.00    genre match (+2.0), mood match (+1.5), energy closeness (+0.49), acousticness fit (+1.0)
+2   Velvet Sunday             1.89    energy closeness (+0.89), acousticness fit (+1.0)
+3   Midnight Coding           1.81    energy closeness (+0.81), acousticness fit (+1.0)
+4   Focus Flow                1.78    energy closeness (+0.78), acousticness fit (+1.0)
+5   Coffee Shop Stories       1.73    energy closeness (+0.73), acousticness fit (+1.0)
+```
+
+---
+
 ## Experiments You Tried
 
-Use this section to document the experiments you ran. For example:
+I ran 7 profiles total — 3 normal ones and 4 designed to break or stress the system.
 
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
+**Normal profiles (worked as expected):**
+
+| Profile | #1 Result | Score | Why it made sense |
+|---|---|---|---|
+| High-Energy Pop | Sunrise City | 5.88 | genre + mood + energy + acousticness all matched |
+| Chill Lofi | Library Rain | 5.96 | same — all 4 features fired |
+| Deep Intense Rock | Storm Runner | 6.00 | perfect score, every feature matched exactly |
+
+**Adversarial profiles (where things got weird):**
+
+**"Conflicting: high energy + sad mood" (r&b, sad, energy 0.9)**
+The #1 result was Still Waters — an r&b song with romantic mood and energy 0.54. It won because genre matched (+2.0) even though its energy was way off and the mood wasn't sad at all. This showed that genre weight is strong enough to pull in a totally wrong song if the genre happens to match.
+
+**"Genre not in catalog (metal)"**
+When the genre doesn't exist in the dataset, genre_match never fires for anything. The max possible score dropped from 6.0 to 4.0 and the system basically became an energy + mood matcher. Storm Runner still came out first, which was fine, but the gap between songs got way smaller and the results felt less confident.
+
+**"Perfect middle energy (0.5)"**
+With target energy right in the middle, every song gets a mediocre energy score — nothing feels close, nothing feels far. Genre ended up being the only real separator. The results felt almost random for songs without a genre match.
+
+**"Acoustic + high energy contradiction" (folk, melancholic, energy 0.88)**
+This one was the most interesting failure. Autumn Letters (folk, melancholic, energy 0.21) won with a score of 5.0 even though its energy was completely wrong. Genre + mood + acousticness all matched and basically outvoted the energy penalty. The system recommended a quiet folk song to someone who said they wanted high energy music, which is a real problem.
 
 ---
 
 ## Limitations and Risks
 
-Summarize some limitations of your recommender.
-
-Examples:
-
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
+- **Genre outweighs everything** — a genre match adds 2.0 points, which can override a bad mood and bad energy match combined. If the catalog has your genre but only one song in it, you're getting that song no matter what.
+- **Missing genre = broken experience** — if you type a genre that's not in the dataset (like "metal"), genre_match never fires and the whole system gets less accurate. There's no fallback.
+- **Contradictory preferences aren't handled** — if someone wants high energy but also likes acoustic, those two signals fight each other because high-energy songs are almost always low-acousticness. The system just picks whoever wins the point battle, which isn't actually what the user wants.
+- **Mood is binary and too strict** — "sad" and "melancholic" get treated as completely different even though they're basically the same vibe. Same with "happy" vs "nostalgic." Real feelings don't have hard edges like that.
+- **Tiny catalog** — 18 songs isn't enough to give different users meaningfully different results. A lot of profiles end up with the same songs in positions 3-5.
+- **No listening history** — the system doesn't know if you already heard a song 50 times and are sick of it.
 
 ---
 
 ## Reflection
 
-Read and complete `model_card.md`:
-
 [**Model Card**](model_card.md)
 
-Write 1 to 2 paragraphs here about what you learned:
+Running the stress tests actually taught me more than building the formula did. The "acoustic + high energy" profile broke my system in a way I didn't expect — Autumn Letters, a quiet folk song, got recommended to someone who said they wanted high energy music, and it scored 5.0 doing it. The genre, mood, and acousticness weights all agreed on it even though the energy was totally wrong. I had given those three features more combined weight than energy, so they just outvoted it. That made me realize that the weights aren't neutral — they're a design decision, and if they're off, the system confidently gives bad answers.
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
-
-
----
-
-## 7. `model_card_template.md`
-
-Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}  
-
-```markdown
-# 🎧 Model Card - Music Recommender Simulation
-
-## 1. Model Name
-
-Give your recommender a name, for example:
-
-> VibeFinder 1.0
-
----
-
-## 2. Intended Use
-
-- What is this system trying to do
-- Who is it for
-
-Example:
-
-> This model suggests 3 to 5 songs from a small catalog based on a user's preferred genre, mood, and energy level. It is for classroom exploration only, not for real users.
-
----
-
-## 3. How It Works (Short Explanation)
-
-Describe your scoring logic in plain language.
-
-- What features of each song does it consider
-- What information about the user does it use
-- How does it turn those into a number
-
-Try to avoid code in this section, treat it like an explanation to a non programmer.
-
----
-
-## 4. Data
-
-Describe your dataset.
-
-- How many songs are in `data/songs.csv`
-- Did you add or remove any songs
-- What kinds of genres or moods are represented
-- Whose taste does this data mostly reflect
-
----
-
-## 5. Strengths
-
-Where does your recommender work well
-
-You can think about:
-- Situations where the top results "felt right"
-- Particular user profiles it served well
-- Simplicity or transparency benefits
-
----
-
-## 6. Limitations and Bias
-
-Where does your recommender struggle
-
-Some prompts:
-- Does it ignore some genres or moods
-- Does it treat all users as if they have the same taste shape
-- Is it biased toward high energy or one genre by default
-- How could this be unfair if used in a real product
-
----
-
-## 7. Evaluation
-
-How did you check your system
-
-Examples:
-- You tried multiple user profiles and wrote down whether the results matched your expectations
-- You compared your simulation to what a real app like Spotify or YouTube tends to recommend
-- You wrote tests for your scoring logic
-
-You do not need a numeric metric, but if you used one, explain what it measures.
-
----
-
-## 8. Future Work
-
-If you had more time, how would you improve this recommender
-
-Examples:
-
-- Add support for multiple users and "group vibe" recommendations
-- Balance diversity of songs instead of always picking the closest match
-- Use more features, like tempo ranges or lyric themes
-
----
-
-## 9. Personal Reflection
-
-A few sentences about what you learned:
-
-- What surprised you about how your system behaved
-- How did building this change how you think about real music recommenders
-- Where do you think human judgment still matters, even if the model seems "smart"
-
+The other thing that surprised me was how much the "missing genre" case revealed. When I tested a "metal" user, the system didn't crash or say "I don't know" — it just quietly got worse and returned results that were less and less related to what the user wanted. Real recommenders probably have this problem too, they just hide it better. Spotify has way more data to fall back on, but the underlying issue is the same: if a user's taste isn't well represented in your data, they get worse recommendations, and they might not even know why.
