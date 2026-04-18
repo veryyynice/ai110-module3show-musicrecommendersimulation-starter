@@ -8,17 +8,24 @@
 
 ## 2. Intended Use
 
-VibeMatch is a simple music recommender that suggests songs based on what kind of music someone is in the mood for right now. You give it your favorite genre, your current mood, how energetic you want the music to feel, and whether you prefer acoustic or electronic sounds — and it gives you a ranked list of songs from the catalog that best match those preferences.
+VibeMatch is a simple music recommender that suggests songs based on what kind of music someone is in the mood for right now. You give it 
+your favorite genre, 
+your current mood,
+ how energetic you want the music to feel,
+ and whether you prefer acoustic or electronic sounds 
+ 
+ — and it gives you a ranked list of songs from the catalog that best match those preferences.
 
-This is a classroom simulation, not a real product. It assumes the user knows what they want and can describe it in those four categories. It doesn't learn from you over time and it doesn't track what you've already listened to.
-
+This is a classroom simulation, not a real product. 
 ---
 
 ## 3. How the Model Works
 
 Every song in the catalog has four things measured about it: its genre, its mood, how energetic it is on a scale from 0 to 1, and how acoustic it sounds on the same scale. When you create a user profile, you're basically saying "here's what I want those four things to be."
 
-The model goes through every song one at a time and gives it a score based on how well it matches. Genre is worth the most points because it's usually the strongest signal for what someone actually wants. Mood is worth slightly less. Energy is scored based on how close the song is to your target — not just yes or no, but how far off it is. Acousticness is worth the least and it's just a yes or no match based on whether you said you like acoustic music.
+The model goes through every song one at a time and gives it a score based on how well it matches.
+Genre is worth the most points because it's usually the strongest signal for what someone actually wants. Mood is worth slightly less. Energy is scored based on how close the song is to your target — not just yes or no, but how far off it is. 
+Acousticness is worth the least and it's just a yes or no match based on whether you said you like acoustic music.
 
 Once every song has a score, they get sorted from highest to lowest and the top results are returned.
 
@@ -26,7 +33,9 @@ Once every song has a score, they get sorted from highest to lowest and the top 
 
 ## 4. Data
 
-The catalog has 18 songs stored in a CSV file. I started with the 10 songs that came with the project and added 8 more to cover genres and moods that were missing.
+The catalog has 18 songs stored in a CSV file. 
+
+I started with the 10 songs that came with the project and added 8 more to cover genres and moods that were missing.
 
 **Genres in the catalog:** pop, lofi, rock, ambient, jazz, synthwave, indie pop, hip-hop, classical, r&b, country, edm, folk, soul, latin
 
@@ -46,15 +55,20 @@ It also works well when genre and mood agree with each other. Chill Lofi and Hig
 
 ## 6. Limitations and Bias
 
-**Genre dominates too much.** Genre is worth 2.0 points, which means a genre match alone can beat a song that perfectly matches your mood, energy, and acousticness preferences. When I tested a "high energy + sad mood" r&b profile, a romantic r&b song with totally the wrong energy won #1 just because the genre matched.
+**Genre dominates too much.** 
+Genre is worth 2.0 points, which means a genre match alone can beat a song that perfectly matches your mood, energy, and acousticness preferences. When I tested a "high energy + sad mood" r&b profile, a romantic r&b song with totally the wrong energy won #1 just because the genre matched.
 
-**Missing genres break the system silently.** If you ask for a genre that doesn't exist in the catalog — like "metal" — genre match never fires for anything. The max possible score drops from 6.0 to 4.0 and the system just gets quietly less accurate. It doesn't tell you anything went wrong.
+**Missing genres break the system silently.** 
+If you ask for a genre that doesn't exist in the catalog — like "metal" (heavy metal) — genre match never fires for anything. The max possible score drops from 6.0 to 4.0 and the system just gets quietly less accurate. It doesn't tell you anything went wrong.
 
-**Conflicting preferences aren't handled.** Someone who wants high energy but also likes acoustic music is asking for something that barely exists in the dataset. Those two signals fight each other and whoever wins is basically arbitrary. I tested this and a quiet folk song scored 5.0 for a user who said they wanted high-energy music, which is clearly wrong.
+**Conflicting preferences aren't handled.** 
+Someone who wants high energy but also likes acoustic music is asking for something that barely exists in the dataset. Those two signals fight each other and whoever wins is basically arbitrary. I tested this and a quiet folk song scored 5.0 for a user who said they wanted high-energy music, which is clearly wrong.
 
-**Mood categories are too rigid.** "Sad" and "melancholic" are basically the same feeling but the system treats them as completely unrelated. Same with "happy" and "nostalgic." If your mood isn't an exact match in the catalog, you get zero points for mood.
+**Mood categories are too rigid.** 
+"Sad" and "melancholic" are basically the same feeling but the system treats them as completely unrelated. Same with "happy" and "nostalgic." If your mood isn't an exact match in the catalog, you get zero points for mood.
 
-**Underrepresented moods.** Even with my additions, some moods like "angry" and "sad" only have one or two songs. Those users will always get weak results in positions 3-5.
+**Underrepresented moods.**
+ Even with my additions, some moods like "angry" and "sad" only have one or two songs. Those users will always get weak results in positions 3-5.
 
 ---
 
@@ -88,7 +102,13 @@ Longer term, it would be cool to add a "don't recommend this again" feature, or 
 ---
 
 ## 9. Personal Reflection
+I lreaned that a good formuals has to be decently comples . 
+The weights also have to pick the data that is the best where u want a good range or data but stuf fliek user prifleis always ened to be hevaily prioritized. 
 
-The biggest thing I learned is that the weights in a scoring formula aren't neutral — they're choices that affect real outcomes. When I set genre to 2.0 and mood to 1.5, I was deciding that genre matters more than mood. That seems reasonable, but the stress tests showed it can backfire when genre and mood disagree. Someone could get recommendations that feel totally off and not know why.
 
-The thing that surprised me most was how confident the system sounds even when it's wrong. When the acoustic + high energy profile returned Autumn Letters at #1 with a score of 5.0, that looks like a great result. But the song is completely wrong for what the user described. Real recommenders probably have this problem too — they show you a confident ranking and you trust it, but the underlying logic might be making weird tradeoffs you can't see.
+The stress tests showed it can backfire when genre and mood disagree. Someone could get recommendations that feel totally off and not know why.
+
+The thing that surprised me most was how confident the system sounds even when it's wrong. When the acoustic + high energy profile returned Autumn Letters at #1 with a score of 5.0, that looks like a great result. 
+But the song is completely wrong for what the user described.
+
+ Real recommenders(spotify) probably have this problem too — they show you a confident ranking and you trust it, but the underlying logic might be making weird tradeoffs you can't see.
